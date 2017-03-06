@@ -1,0 +1,256 @@
+package fracCalc;
+import java.util.Scanner;
+import java.util.*;
+
+public class FracCalc {
+
+    public static void main(String[] args) {
+    	// prompt
+    	System.out.println("This is a program used to calculate operations between fractions. "
+    			+ "Type quit to stop calculating.");
+    	boolean calculating = true;
+        Scanner input = new Scanner(System.in);
+        String response = input.nextLine();
+        // while loop to see if user wants to keep calculating
+        while (calculating) {        	
+            // user input and more prompting            
+            System.out.println(produceAnswer(response));
+            System.out.println("Do you want to calculate another? Type quit or type another equation.");
+            response = input.nextLine();
+        	if(response.equals("quit")) {
+        		break;
+            }
+        }
+
+    }
+    
+  
+    public static String produceAnswer(String input) {
+    	String answer = "0";
+    	// used to split input into tokens based on whitespace
+        String[] parser = input.split(" ");
+        // splits on whitespace
+        String operand1 = parser[0];
+        String operator = parser[1];
+        String operand2 = parser[2];
+        // uses different method to parse fraction into whole, numerator and denominator
+        operand1 = parseFrac(operand1);
+        operand2 = parseFrac(operand2);
+        
+        String[] parsefrac1 = operand1.split(" ");
+        String[] parsefrac2 = operand2.split(" ");
+        // changes the parsed strings into integers to use for calculating
+        int whole1 = Integer.parseInt(parsefrac1[0]);
+        int numer1 = Integer.parseInt(parsefrac1[1]);
+        int denom1 = Integer.parseInt(parsefrac1[2]);
+        int whole2 = Integer.parseInt(parsefrac2[0]);
+        int numer2 = Integer.parseInt(parsefrac2[1]);
+        int denom2 = Integer.parseInt(parsefrac2[2]);
+        // changes the mixed numbers into improper fractions for numerator1
+        if(whole1 < 0) {
+        	numer1 += (Math.abs(whole1 * denom1));
+        	numer1 *= -1;
+        }        
+        else {        
+            numer1 += (whole1 * denom1);
+        }
+        // changes the mixed numbers into improper fractions for numerator2
+        if(whole2 < 0) {
+        	numer2 += (Math.abs(whole2 * denom2));
+        	numer2 *= -1;
+        }
+        else {        
+            numer2 += (whole2 * denom2);
+        }
+        // checks if operator has addition for calculations
+        if(operator.equals("+")) {
+        	answer = addition(numer1, numer2, denom1, denom2);
+        }
+        // checks if operator has subtraction for calculations
+        if(operator.equals("-")) {
+        	answer = subtraction(numer1, numer2, denom1, denom2);
+        }
+        // checks if operator has multiplication for calculations
+        if(operator.equals("*")) {
+        	answer = multiplication(numer1, numer2, denom1, denom2);
+        }
+        // checks if operator has division for calculations
+        if(operator.equals("/")) {
+        	answer = division(numer1, numer2, denom1, denom2);
+        }
+        	
+        answer = reduction(answer);
+        answer = dumbMixedNumbers(answer);        
+        return answer;
+    }
+
+    public static String parseFrac(String operand) {
+    	// variable declaration
+    	String whole = "0";
+        String numer = "0";
+        String denom = "0";
+        // special case for parsing if there is a mixed number
+        if(operand.contains("_")) {
+        	// finding the index of certain characters and setting them to variables
+    		int separation = operand.indexOf("_");
+    		int fractionsplit = operand.indexOf("/");
+    		// use substring function to separate the string for the whole value, numerator and denominator
+    		whole = operand.substring(0, separation);
+    		numer = operand.substring(separation + 1, fractionsplit);
+    		denom = operand.substring(fractionsplit + 1, operand.length());
+        }
+    	
+    	if(!operand.contains("_") && operand.contains("/")) {
+    		// special case for parsing where there is no mixed number so whole is 0
+    		whole = "0";
+    		int fractionsplit = operand.indexOf("/");
+    		// uses substring to split between numerator and denominator
+    		numer = operand.substring(0, fractionsplit);
+    		denom = operand.substring(fractionsplit + 1, operand.length());
+    	}
+    	
+    	if(!operand.contains("_") && !operand.contains("/")) {
+    		// special case for parsing where there is no fraction only a whole number so denominator is 1
+    		whole = operand.substring(0, operand.length());
+    		numer = "0";
+    		denom = "1";
+        }
+    	String answer = (whole + " " + numer + " " + denom);
+    	
+    	return answer;
+    }
+    
+    public static String multiplication(int numer1, int numer2, int denom1, int denom2) {
+    	// multiplies numerators and denominators by each other to find answer
+    	String numerfinal = Integer.toString((numer1 * numer2));
+    	String denomfinal = Integer.toString((denom1 * denom2));
+    	
+    	String fraction = numerfinal + "/" + denomfinal;
+    	return fraction;
+    	
+    }
+    
+    public static String division(int numer1, int numer2, int denom1, int denom2) {
+    	// multiplies first fraction by reciprocal of second to find answer
+    	String numerfinal = Integer.toString((numer1 * denom2));
+    	String denomfinal = Integer.toString((denom1 * numer2));
+    	
+    	String fraction = numerfinal + "/" + denomfinal;
+    	return fraction;
+    	
+    }	
+    
+    public static String addition(int numer1, int numer2, int denom1, int denom2) {
+    	String fraction = "0";
+    	// if already like denominators, just add the numerators
+    	if(denom1 == denom2) {
+    		String numerfinal = Integer.toString(numer1 + numer2);
+    		String denomfinal = Integer.toString(denom1);
+    		
+    		fraction = numerfinal + "/" + denomfinal;
+    		return fraction;
+    	}
+    	else {
+    		// multiply fraction by opposite denominator to get like denominators
+    		String denomfinal = Integer.toString(denom1 * denom2);
+    		numer1 *= denom2;
+    		numer2 *= denom1;
+    		// add numerators after like denominators
+    		String numerfinal = Integer.toString(numer1 + numer2);
+    		fraction = numerfinal + "/" + denomfinal;
+    	}
+    	
+    	return fraction;
+    }
+    
+    public static String subtraction(int numer1, int numer2, int denom1, int denom2) {
+    	String fraction = "0";
+    	// if already like denominators, just subtract the numerators
+    	if(denom1 == denom2) {
+    		String numerfinal = Integer.toString(numer1 - numer2);
+    		String denomfinal = Integer.toString(denom1);
+    		
+    		fraction = numerfinal + "/" + denomfinal;
+    		return fraction;
+    	}
+    	else {
+    		// multiply fraction by opposite denominator to get like denominators
+    		String denomfinal = Integer.toString(denom1 * denom2);
+    		numer1 *= denom2;
+    		numer2 *= denom1;
+    		// subtract numerators after like denominators
+    		String numerfinal = Integer.toString(numer1 - numer2);
+    		fraction = numerfinal + "/" + denomfinal;
+    	}
+    	
+    	return fraction;
+    }
+    
+    public static String reduction(String fraction) {
+    	// splitting up numer and denom and variable declaration
+    	int fractionsplit = fraction.indexOf("/");
+    	int numer = Integer.parseInt(fraction.substring(0, fractionsplit));
+    	int denom = Integer.parseInt(fraction.substring(fractionsplit + 1, fraction.length()));
+    	
+    	String numerfinal = "0";
+    	String denomfinal = "0";
+
+    	// for loop used to go through all the possible divisors
+    	for(int i = 2; i < 8; i++) { 
+    		// will only go through if statement if the fraction isn't already reduced
+    		if(numer % i == 0 && denom % i == 0) {
+    			// while loop so that the dividing repeats until the fraction is completely reduced
+    			while(numer % i == 0 && denom % i == 0) {
+    				
+    				numer /= i;
+    		        denom /= i;
+    		        numerfinal = Integer.toString(numer);
+    		        denomfinal = Integer.toString(denom);
+    			}
+    			fraction = numerfinal + "/" + denomfinal;
+    		}
+    	}
+    	
+    	return fraction;
+    }
+    // turning them back into mixed numbers
+    public static String dumbMixedNumbers(String fraction) {
+    	int fractionsplit = fraction.indexOf("/");
+    	int numer = Integer.parseInt(fraction.substring(0, fractionsplit));
+    	int denom = Integer.parseInt(fraction.substring(fractionsplit + 1, fraction.length()));
+    	int whole = 0;
+    		
+    	String numerfinal = fraction.substring(0, fractionsplit);
+    	String denomfinal = fraction.substring(fractionsplit + 1, fraction.length());
+    	String answer = numerfinal + "/" + denomfinal;	
+        // list of conditionals for different requirements the answer must meet such as 23/23 = 1
+    	if(Math.abs(numer) == 0)
+    	    return Integer.toString(numer/denom);
+    	
+    	if(Math.abs(denom) == Math.abs(numer))
+    		return Integer.toString(numer/denom);
+    	
+    	if(denom == 1 || denom == -1)
+    		return Integer.toString(numer/denom);
+    	
+    	if(Math.abs(denom) > Math.abs(numer)) {
+    		if(denom < 0 && numer > 0) {
+    			numer *= -1;
+    			denom *= -1;
+    			answer = Integer.toString(numer) + "/" + Integer.toString(denom);
+    		}    		
+    		return answer;    		
+    	}
+    	// changes back to mixed number
+    	if(Math.abs(denom) < Math.abs(numer)) {
+    		whole = numer/denom;
+    		if(whole == 0)
+    			return numer + "/" + denom;
+    		numer = Math.abs(numer - (denom * whole));
+    		denom = Math.abs(denom);
+    		answer = whole + "_" + numer + "/" + denom;
+    	}
+    	
+    	return answer;
+    }
+}
